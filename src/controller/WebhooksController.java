@@ -16,47 +16,21 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class WebhooksController {
 
 	private static String SECRET = "fudan@188";
+	private static String[] authorityArray = new String[] {"SidneyFanFan"};
 
-	@RequestMapping(value = "/githubPush.do", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody Map<String, Object> webhooks(
-			@RequestBody WebHooksJson requestBody) {
+	@RequestMapping(value = "/githubPush.do", method = RequestMethod.POST)
+	@ResponseBody
+	public String webhooks(@RequestBody String requestBody) {
 		// this is a post from github push
-		Map<String, Object> response = new HashMap<String, Object>();
-		String secret = requestBody.getSecret();
-		String senderName = requestBody.getSenderName();
-		response.put("Sender_Name", senderName);
-		if (secret.equals(SECRET)) {
-			response.put("Authority", "Accept");
-		} else {
-			response.put("Authority", "Denied");
+		System.out.println(requestBody);
+		JSONObject request = new JSONObject(requestBody);
+		String pusher = request.getJSONObject("pusher").getString("name");
+		for (String string : authorityArray) {
+			if(pusher.equals(string)){
+				return "OK: " + pusher;
+			}
 		}
-		// excute ssh to pull and compile project
-		return response;
-	}
-
-	private class WebHooksJson implements Serializable {
-
-		private static final long serialVersionUID = 1L;
-
-		private String zen;
-		private int hook_id;
-		private String hook;
-		private String respository;
-		private String sender;
-
-		String getSenderName() {
-			JSONObject senderJsonObj = new JSONObject(sender);
-			String senderName = senderJsonObj.getString("login");
-			return senderName;
-		}
-
-		String getSecret() {
-			JSONObject senderJsonObj = new JSONObject(hook);
-			String secret = senderJsonObj.getJSONObject("config").getString(
-					"secret");
-			return secret;
-		}
-
+		return "Failed: " + pusher+" is not authorized";
 	}
 
 }
