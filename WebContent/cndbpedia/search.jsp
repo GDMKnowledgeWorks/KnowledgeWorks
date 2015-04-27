@@ -4,7 +4,7 @@
 <%@ page import="knowledgeBase.*"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
-<%@ page import="structure.Triple"%>
+<%@ page import="cnell.structure.Triple"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%
 	// Currently I use js to replace some functions in JSP

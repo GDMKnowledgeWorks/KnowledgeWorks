@@ -82,6 +82,17 @@ public class FileUtil {
 		return content;
 	}
 
+	public static List<String> readFileByLineWithException(String filePath)
+			throws IOException {
+		ArrayList<String> content = new ArrayList<String>();
+		BufferedReader br = new BufferedReader(new FileReader(filePath));
+		while (br.ready()) {
+			content.add(br.readLine());
+		}
+		br.close();
+		return content;
+	}
+
 	public static void exportHashMapByline(HashMap<String, String> map,
 			String exportPath) {
 		try {

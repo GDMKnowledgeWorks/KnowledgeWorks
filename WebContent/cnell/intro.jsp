@@ -2,25 +2,36 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ page import="knowledgeBase.*"%>
+<%@ page import="dao.CNELL_DAO"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
+<%@ page import="cnell.structure.Triple"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%
 	// Currently I use js to replace some functions in JSP
 	// Change to Java is OK
 
 	/***********TEMPLATE************/
-	String siteTitle = "CN DBpedia";
-	String cssPath = "../resources/css/cndbpedia.css";
+	String siteTitle = "CNELL";
+	String cssPath = "../resources/css/dashboard.css";
 	int defaultFuncIndex = 0;
 	// functions & links & introduction & template
 	List<String[]> functions = new ArrayList<String[]>();
 	functions.add(new String[]{"Introduction","introduction","Brief introduction", "#"});
-	functions.add(new String[]{"Search","search","Brief introduction","SEARCH"});
-	functions.add(new String[]{"Sparql","http://gdm.fudan.edu.cn/sparql/gdm_sparql.jsp","#","#"});
+	functions.add(new String[]{"Relation","relation","Brief introduction","SEARCH"});
 	functions.add(new String[]{"Download","#","Brief introduction","#"});
 	functions.add(new String[]{"People","#","Brief introduction","#"});
 	functions.add(new String[]{"Publication","#","Brief introduction","#"});
 	functions.add(new String[]{"GDM Lab","http://gdm.fudan.edu.cn","Brief introduction","#"});
+	
+	String date =request.getParameter("date");
+	if(date==null){
+		date = CNELL_DAO.currDate();
+	}
+	// placeholder of search form
+	String yyyy = "20"+date.substring(0,2);
+	String mm = date.substring(2,4);
+	String dd = date.substring(4,6);
 	
 	int currentFuncIndex = defaultFuncIndex;
 	String[] curr_func = functions.get(currentFuncIndex);
@@ -46,7 +57,7 @@
 <link href="../resources/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <!-- Custom styles for this template -->
-<link href=<%=cssPath%> rel="stylesheet">
+<link href="../resources/css/dashboard.css" rel="stylesheet">
 
 <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
 <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
@@ -71,8 +82,10 @@
 						class="icon-bar"></span> <span class="icon-bar"></span> <span
 						class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#"><%=siteTitle%></a><a
-					class="navbar-brand subbrand" href="/KnowledgeWorks">Knowledge Works</a>
+				<a class="navbar-brand"
+					href="http://gdm.fudan.edu.cn/KnowledgeWorks/cndbpedia"><%=siteTitle%></a><a
+					class="navbar-brand subbrand" href="/KnowledgeWorks">Knowledge
+					Works</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<ul class="nav navbar-nav navbar-right">
@@ -88,21 +101,19 @@
 
 	<div class="container-fluid">
 		<div class="row">
+			<!-- LEFT -->
 			<div class="col-sm-3 col-md-2 sidebar">
 				<ul class="nav nav-sidebar">
-				<%
-					String[] func;
-					for(int i=0;i<functions.size();i++){
-						func = functions.get(i);
-						if(i==currentFuncIndex){
-							out.println(String.format("<li class='active'><a href=%s>%s<span class='sr-only'>(current)</span></a></li>",
-									func[1],func[0]));
-						}else{
-							out.println(String.format("<li><a href=%s>%s</a></li>",
-									func[1],func[0]));
-						}
-					}
-				%>
+					<c:forEach items="${functions}" var="func">
+						<c:if test="${currentFunc == func[0]}">
+							<li class='active'><a href="${func[1]}"><c:out
+										value="${func[0]}"></c:out><span class='sr-only'>(current)</span></a></li>
+						</c:if>
+						<c:if test="${currentFunc != func[0]}">
+							<li><a href="${func[1]}"><c:out value="${func[0]}"></c:out><span
+									class='sr-only'>(current)</span></a></li>
+						</c:if>
+					</c:forEach>
 				</ul>
 				<footer class="sidebar-footer">
 					Copy Right <span class="fontArial">©</span>
@@ -112,16 +123,58 @@
 					GDM Lab <br> Fudan University
 				</footer>
 			</div>
+			<!-- MAIN -->
 			<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 				<div class="page-header">
-					<h1>Introduction to CN-DBpedia</h1>
-					<h5 class="text-muted">What is CN-DBpedia</h5>
-					<p>CN-DBpedia is an effort to extract structured information from Chinese encyclopedia sites, such as Baidu Baike, and make this information available on the Web. CN-DBpedia allows you to ask sophisticated queries against Chinese encyclopedia sites, and to link the different data sets on the Web to Chinese encyclopedia sites data.</p>
-					<h5 class="text-muted">什么是CN-DBpedia</h5>
-					<p>CN-DBpedia致力于从中文百科类网站（如百科百科等）中提取结构化信息，并将其共享。CN-DBpedia支持用户进行复杂查询，并将中文百科类网站数据与互联网上其他数据源数据进行连接。</p>
+					<h1><%=curr_func[0]%></h1>
+					<h5 class="text-muted"><%=curr_func[2]%></h5>
 				</div>
-				<!-- Template Choose -->
-				<!-- panel panel-default -->
+				<!--Information -->
+				<div class="panel panel-default">
+					<div class="panel-heading" data-toggle="collapse"
+						data-parent="#accordion" data-target="#collapseInformation">
+						<h4 class="panel-title">
+							<span class="glyphicon glyphicon-search"></span> Today
+						</h4>
+					</div>
+					<div id="collapseInformation" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<div class="table-responsive">
+								<c:forEach items="${status}" var="statusItem">
+									<c:if test="${statusItem[0]=='1'}">
+										<p>
+											<c:out value="${statusItem[1]}"></c:out>
+										</p>
+									</c:if>
+									<c:if test="${statusItem[0]=='2'}">
+										<p>
+											<c:out value="${statusItem[1]}"></c:out>
+										</p>
+									</c:if>
+								</c:forEach>
+								<table class="table table-hover table-striped">
+									<thead>
+										<tr>
+											<th>Relation</th>
+											<th>News Link</th>
+										</tr>
+									</thead>
+									<tbody>
+										<c:forEach items="${data}" var="triple">
+											<tr>
+												<td class="col-xs-6"><a href="#"><c:out
+															value="${triple[0]}"></c:out></a> <c:out value="${triple[1]}"></c:out>
+													<a href="#"><c:out value="${triple[2]}"></c:out></a></td>
+												<td class="col-xs-6"><a href="${triple[3]}"
+													target="_blank"><c:out value="${triple[3]}"></c:out></a></td>
+											</tr>
+										</c:forEach>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
