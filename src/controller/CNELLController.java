@@ -17,9 +17,11 @@ import dao.CNELL_DAO;
 @Controller
 @RequestMapping("/cnell")
 public class CNELLController {
+//	private CNELL_DAO dao = new CNELL_DAO(
+//			"http://localhost:8082/CNELL/CNELLServlet?date=%s&type=%s-%s");
 	private CNELL_DAO dao = new CNELL_DAO(
-			"http://localhost:8082/CNELL/CNELLServlet?date=%s&type=%s-%s");
-
+			"http://10.141.208.27:8080/CNELL/CNELLServlet?date=%s&type=%s-%s");
+	
 	@RequestMapping(value = "/")
 	public ModelAndView defaultpage() {
 		System.out

@@ -45,6 +45,7 @@ public class CNELL_DAO {
 		// for test
 		String url_str = String.format(urlTpl, date, type1, type2);
 		String response = excuteGet(url_str);
+		System.out.println(response);
 		if (!response.contains("=")) {
 			// empty return empty
 			return ret;
@@ -108,7 +109,6 @@ public class CNELL_DAO {
 			url_con.setRequestProperty("User-Agent",
 					"Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)");
 			InputStream htm_in = url_con.getInputStream();
-
 			String htm_str = InputStream2String(htm_in, charset);
 			return htm_str;
 		} catch (IOException e) {
@@ -131,7 +131,7 @@ public class CNELL_DAO {
 
 	public static void main(String[] args) {
 		CNELL_DAO dao = new CNELL_DAO(
-				"http://localhost:8082/CNELL/CNELLServlet?date=%s&type=%s-%s");
+				"http://10.141.208.27:8080/CNELL/CNELLServlet?date=%s&type=%s-%s");
 		List<String[]> list = dao.getPatternRecord("150401", "ORG", "PERSON");
 		for (String[] strings : list) {
 			System.out.printf("%s %s %s %s\n", strings[0], strings[1],
