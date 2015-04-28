@@ -204,8 +204,7 @@
 					purus sit amet fermentum. Fusce dapibus, tellus ac cursus commodo,
 					tortor mauris condimentum nibh.</p>
 				<p>
-					<a class="btn btn-default" href="#" role="button">Building...
-						&raquo;</a>
+					<a class="btn btn-default" href="./cnell" role="button">View details</a>
 				</p>
 			</div>
 			<!-- /.col-lg-4 -->

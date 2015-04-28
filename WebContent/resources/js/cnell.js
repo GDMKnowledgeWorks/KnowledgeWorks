@@ -1,5 +1,9 @@
 var WORDNUM = 20;
 
+$(document).ready(function() {  
+    $('#datatable').dataTable();  
+} );
+
 $("#search_buttom").click(function() {
 	var time = $("#search_input").val();
 	console.log(time);

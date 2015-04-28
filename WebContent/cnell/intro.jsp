@@ -83,7 +83,7 @@
 						class="icon-bar"></span>
 				</button>
 				<a class="navbar-brand"
-					href="http://gdm.fudan.edu.cn/KnowledgeWorks/cndbpedia"><%=siteTitle%></a><a
+					href="http://gdm.fudan.edu.cn/KnowledgeWorks/cnell"><%=siteTitle%></a><a
 					class="navbar-brand subbrand" href="/KnowledgeWorks">Knowledge
 					Works</a>
 			</div>
@@ -156,16 +156,20 @@
 									<thead>
 										<tr>
 											<th>Relation</th>
+											<th>Instances</th>
 											<th>News Link</th>
 										</tr>
 									</thead>
 									<tbody>
 										<c:forEach items="${data}" var="triple">
 											<tr>
-												<td class="col-xs-6"><a href="#"><c:out
-															value="${triple[0]}"></c:out></a> <c:out value="${triple[1]}"></c:out>
-													<a href="#"><c:out value="${triple[2]}"></c:out></a></td>
-												<td class="col-xs-6"><a href="${triple[3]}"
+												<td class="col-xs-4">[<c:out value="${triple[1]}"></c:out>]
+												</td>
+												<td class="col-xs-4">( <a href="#"><c:out
+															value="${triple[0]}"></c:out>,</a> <a href="#"><c:out
+															value="${triple[2]}"></c:out></a> )
+												</td>
+												<td class="col-xs-4"><a href="${triple[3]}"
 													target="_blank"><c:out value="${triple[3]}"></c:out></a></td>
 											</tr>
 										</c:forEach>
@@ -185,7 +189,7 @@
 	<script src="../resources/js/jquery.min.js"></script>
 	<script src="../resources/js/jquery.mobile.custom.min.js"></script>
 	<script src="../resources/dist/js/bootstrap.min.js"></script>
-	<script src="../resources/js/cndb.js"></script>
+	<script src="../resources/js/cnell.js"></script>
 	<!-- <script src="assets/js/docs.min.js"></script> -->
 	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 	<script src="../resources/assets/js/ie10-viewport-bug-workaround.js"></script>

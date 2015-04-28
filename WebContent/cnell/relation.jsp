@@ -83,7 +83,7 @@
 						class="icon-bar"></span>
 				</button>
 				<a class="navbar-brand"
-					href="http://gdm.fudan.edu.cn/KnowledgeWorks/cndbpedia"><%=siteTitle%></a><a
+					href="http://gdm.fudan.edu.cn/KnowledgeWorks/cnell"><%=siteTitle%></a><a
 					class="navbar-brand subbrand" href="/KnowledgeWorks">Knowledge
 					Works</a>
 			</div>
@@ -165,20 +165,24 @@
 										</p>
 									</c:if>
 								</c:forEach>
-								<table class="table table-hover table-striped">
+								<table class="table table-hover table-striped" id="datatable">
 									<thead>
 										<tr>
 											<th>Relation</th>
+											<th>Instances</th>
 											<th>News Link</th>
 										</tr>
 									</thead>
 									<tbody>
 										<c:forEach items="${data}" var="triple">
 											<tr>
-												<td class="col-xs-6"><a href="#"><c:out
-															value="${triple[0]}"></c:out></a> <c:out value="${triple[1]}"></c:out>
-													<a href="#"><c:out value="${triple[2]}"></c:out></a></td>
-												<td class="col-xs-6"><a href="${triple[3]}"
+												<td class="col-xs-4">[<c:out value="${triple[1]}"></c:out>]
+												</td>
+												<td class="col-xs-4">( <a href="#"><c:out
+															value="${triple[0]}"></c:out>,</a> <a href="#"><c:out
+															value="${triple[2]}"></c:out></a> )
+												</td>
+												<td class="col-xs-4"><a href="${triple[3]}"
 													target="_blank"><c:out value="${triple[3]}"></c:out></a></td>
 											</tr>
 										</c:forEach>
@@ -202,11 +206,17 @@
 	<script type="text/javascript">
 		$(document).ready(function() {
 			var date = new Date();
-			var yyyy = <%=yyyy%>;
-			var mm = <%=mm%>;
-			mm = mm -1;
-			var dd = <%=dd%>;
-			date.setFullYear(yyyy,mm,dd);
+			var yyyy =
+	<%=yyyy%>
+		;
+			var mm =
+	<%=mm%>
+		;
+			mm = mm - 1;
+			var dd =
+	<%=dd%>
+		;
+			date.setFullYear(yyyy, mm, dd);
 			document.getElementById('search_input').valueAsDate = date;
 		});
 	</script>
