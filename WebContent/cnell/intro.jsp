@@ -56,6 +56,9 @@
 <!-- Bootstrap core CSS -->
 <link href="../resources/dist/css/bootstrap.min.css" rel="stylesheet">
 
+<!-- Bootstrap table CSS -->
+<link href="../resources/table/bootstrap-table.min.css" rel="stylesheet">
+
 <!-- Custom styles for this template -->
 <link href="../resources/css/dashboard.css" rel="stylesheet">
 
@@ -68,6 +71,24 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+
+<!-- move to the top cause the datatable plug must be initialized at the beginning-->
+<script src="../resources/js/jquery.min.js"></script>
+<script src="../resources/dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../resources/media/js/jquery.dataTables.js"></script>
+
+<!-- initialize datatable -->   
+ <script type="text/javascript">	
+	$(document).ready(function() {
+		$('#datatable').dataTable(
+			{
+				"searching":false,
+				"paging":false
+			}
+		);		
+	});
+</script> 
+
 </head>
 
 <body>
@@ -152,6 +173,9 @@
 										</p>
 									</c:if>
 								</c:forEach>
+								
+								
+								
 								<table class="table table-hover table-striped">
 									<thead>
 										<tr>
@@ -175,6 +199,8 @@
 										</c:forEach>
 									</tbody>
 								</table>
+								
+								
 							</div>
 						</div>
 					</div>
@@ -186,9 +212,7 @@
 	<!-- Bootstrap core JavaScript
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="../resources/js/jquery.min.js"></script>
 	<script src="../resources/js/jquery.mobile.custom.min.js"></script>
-	<script src="../resources/dist/js/bootstrap.min.js"></script>
 	<script src="../resources/js/cnell.js"></script>
 	<!-- <script src="assets/js/docs.min.js"></script> -->
 	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->

@@ -59,15 +59,33 @@
 <!-- Custom styles for this template -->
 <link href="../resources/css/dashboard.css" rel="stylesheet">
 
+
+<!-- move to the top cause the datatable plug must be initialized at the beginning-->
+<script src="../resources/js/jquery.min.js"></script>
+<script src="../resources/dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../resources/media/js/jquery.dataTables.js"></script>
+
+<!-- initialize datatable -->   
+ <script type="text/javascript">	
+	$(document).ready(function() {
+		$('#datatable').dataTable(
+			{
+				"searching":false,
+				"paging":false
+			}
+		);		
+	});
+</script> 
+
 <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
 <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
-<script src="../resources/assets/js/ie-emulation-modes-warning.js"></script>
 
 <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    <![endif]--> 
+    
 </head>
 
 <body>
@@ -76,8 +94,7 @@
 		<div class="container-fluid">
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle collapsed"
-					data-toggle="collapse" data-target="#navbar" aria-expanded="false"
-					aria-controls="navbar">
+					data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
 					<span class="sr-only">Toggle navigation</span> <span
 						class="icon-bar"></span> <span class="icon-bar"></span> <span
 						class="icon-bar"></span>
@@ -165,10 +182,50 @@
 										</p>
 									</c:if>
 								</c:forEach>
-								<table class="table table-hover table-striped" id="datatable">
+								
+						<!--  	<table id="test" class="table table-striped table-bordered">
 									<thead>
 										<tr>
-											<th>Relation</th>
+											<th>Name</th>
+											<th>Position</th>
+											<th>Office</th>
+											<th>Age</th>
+											<th>Start date</th>
+											<th>Salary</th>
+										</tr>
+									</thead>	
+									<tbody>
+										<tr>
+											<td>Tiger Nixon</td>
+											<td>System Architect</td>
+											<td>Edinburgh</td>
+											<td>61</td>
+											<td>2011/04/25</td>
+											<td>$320,800</td>
+										</tr>
+										<tr>
+											<td>Garrett Winters</td>
+											<td>Accountant</td>
+											<td>Tokyo</td>
+											<td>63</td>
+											<td>2011/07/25</td>
+											<td>$170,750</td>
+										</tr>
+										<tr>
+											<td>Ashton Cox</td>
+											<td>Junior Technical Author</td>
+											<td>San Francisco</td>
+											<td>66</td>
+											<td>2009/01/12</td>
+											<td>$86,000</td>
+										</tr>
+									</tbody>
+								</table>  
+							-->
+								<table class="table table-hover table-striped"  id="datatable">
+									<thead>
+										<tr>
+											<th  class="sortable">Relation</th>
 											<th>Instances</th>
 											<th>News Link</th>
 										</tr>
@@ -188,6 +245,8 @@
 										</c:forEach>
 									</tbody>
 								</table>
+								
+								
 							</div>
 						</div>
 					</div>
@@ -199,11 +258,17 @@
 	<!-- Bootstrap core JavaScript
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="../resources/js/jquery.min.js"></script>
-	<script src="../resources/js/jquery.mobile.custom.min.js"></script>
-	<script src="../resources/dist/js/bootstrap.min.js"></script>
+	
+	
+	
+	<script src="../resources/js/jquery.mobile.custom.min.js"></script>	
 	<script src="../resources/js/cnell.js"></script>
-	<script type="text/javascript">
+	<script src="../resources/assets/js/ie-emulation-modes-warning.js"></script>
+	<!-- <script src="assets/js/docs.min.js"></script> -->
+	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+	<script src="../resources/assets/js/ie10-viewport-bug-workaround.js"></script>
+		
+	<script type="text/javascript">	
 		$(document).ready(function() {
 			var date = new Date();
 			var yyyy =
@@ -220,9 +285,8 @@
 			document.getElementById('search_input').valueAsDate = date;
 		});
 	</script>
-	<!-- <script src="assets/js/docs.min.js"></script> -->
-	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-	<script src="../resources/assets/js/ie10-viewport-bug-workaround.js"></script>
+
+	
 </body>
 </html>
 
