@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Super Verification Code</title>
+</head>
+<body>
+	<div class="svc" vid>
+		<div class="svcText" id="svcText"></div>
+		<form>
+			<dl>
+				<dt>
+					<label class="svcQuestion" id="svcQuestion1"></label>
+				</dt>
+				<dd>
+					<input type="text" class="svcInput" id="svcInput1">
+				</dd>
+				<dt>
+					<label class="svcQuestion" id="svcQuestion2"></label>
+				</dt>
+				<dd>
+					<input type="text" class="svcInput" id="svcInput2">
+				</dd>
+			</dl>
+			<button class="svcbtn" id="svcSkipBtn">Skip</button>
+			<button class="svcbtn" id="svcSubmitBtn">Submit</button>
+		</form>
+	</div>
+	<!-- <script type="text/javascript"
+		src="http://code.jquery.com/jquery-1.6.2.min.js"></script> -->
+	<script src="../resources/js/jquery.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			var text, q1, q2;
+			// ajax get text and questions
+			$.getJSON("/KnowledgeWorks/SvcServlet", function(data, status) {
+				console.log(data);
+				text = data.text;
+				q1 = data.questions[0];
+				q2 = data.questions[1];
+				$(".svc").attr("vid", data.vid);
+				$("#svcText").text(text);
+				$("#svcQuestion1").text(q1);
+				$("#svcQuestion2").text(q2);
+			});
+		});
+
+		$("#svcSubmitBtn").click(function() {
+			var vid = $(".svc").attr("vid");
+			var a1 = $("#svcInput1").val();
+			var a2 = $("#svcInput2").val();
+			var answers = new Array();
+			answers.push(a1);
+			answers.push(a2);
+			$.ajax({
+				type : 'POST',
+				traditional : true,
+				url : '/KnowledgeWorks/SvcServlet',
+				data : {
+					'vid' : vid,
+					'answers' : answers
+				},
+				success : function(data) {
+					console.log(data);
+					alert(data.status);
+				},
+				dataType : "json"
+			});
+			return false;
+		});
+		
+		$("#svcSkipBtn").click(function() {
+			var vid = $(".svc").attr("vid");
+			$.getJSON("/KnowledgeWorks/SvcServlet", function(data, status) {
+				console.log(data);
+				text = data.text;
+				q1 = data.questions[0];
+				q2 = data.questions[1];
+				$(".svc").attr("vid", data.vid);
+				$("#svcText").text(text);
+				$("#svcQuestion1").text(q1);
+				$("#svcQuestion2").text(q2);
+				$(".svcInput").val("");
+			});
+			return false;
+		});
+	</script>
+</body>
+</html>

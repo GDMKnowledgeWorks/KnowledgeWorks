@@ -190,9 +190,9 @@
 											<c:forEach items="${InfoBox}" var="triple">
 												<tr>
 													<td class="col-xs-3"><c:out
-															value="${triple.getArg2()}"></c:out></td>
+															value="${triple.getArg2()}" escapeXml="false"></c:out></td>
 													<td class="col-xs-9"><c:out
-															value="${triple.getArg3()}"></c:out></td>
+															value="${triple.getArg3()}" escapeXml="false"></c:out></td>
 												</tr>
 											</c:forEach>
 										</tbody>

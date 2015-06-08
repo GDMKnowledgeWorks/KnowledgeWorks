@@ -9,7 +9,9 @@ import structure.Triple;
 public class CNDB_DAO extends DAO {
 
 	private static String SELECT_INFORMATION = "select * from information where entity_name='%s'";
-	private static String SELECT_INFOBOX = "select * from infobox where entity_name='%s'";
+	private static String SELECT_ALIAS = "select * from aliasmapping where entity_alias='%s'";
+	private static String SELECT_INFOBOX = "select * from infoboxlinking where entity_name='%s'";
+	private static String SELECT_ATTRIBUTEMAPPING = "select * from attributemapping";
 	private static String SELECT_CATEGORY = "select * from category where entity_name='%s'";
 	private static String SELECT_CLASS = "select * from class where entity_name='%s'";
 	private static String SELECT_CLASS2 = "select * from myclass2 where entity_name='%s'";
@@ -27,7 +29,7 @@ public class CNDB_DAO extends DAO {
 			super.connect();
 			stmt = conn.createStatement();
 			String sql = String.format(SELECT_INFORMATION, entity_name);
-			System.out.println(sql);
+
 			rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				infoList.add(new Triple<String, String, String>(rs
@@ -45,13 +47,34 @@ public class CNDB_DAO extends DAO {
 		return infoList;
 	}
 
+	public List<Triple<String, String, String>> getAttributeMapping() {
+		List<Triple<String, String, String>> infoList = new ArrayList<Triple<String, String, String>>();
+		try {
+			super.connect();
+			stmt = conn.createStatement();
+			String sql = String.format(SELECT_ATTRIBUTEMAPPING);
+
+			rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				infoList.add(new Triple<String, String, String>(rs
+						.getString("entity_attribute"), rs
+						.getString("type_dbpedia"), rs.getString("type_link")));
+			}
+			super.close();
+		} catch (SQLException e) {
+			System.out.println("Data base manipulation error");
+			// e.printStackTrace();
+		}
+		return infoList;
+	}
+
 	public List<Triple<String, String, String>> getInfobox(String entity_name) {
 		List<Triple<String, String, String>> list = new ArrayList<Triple<String, String, String>>();
 		try {
 			super.connect();
 			stmt = conn.createStatement();
 			String sql = String.format(SELECT_INFOBOX, entity_name);
-			System.out.println(sql);
+
 			rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				list.add(new Triple<String, String, String>(rs
@@ -75,7 +98,6 @@ public class CNDB_DAO extends DAO {
 			super.connect();
 			stmt = conn.createStatement();
 			String sql = String.format(SELECT_CATEGORY, entity_name);
-			System.out.println(sql);
 			rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				list.add(new Triple<String, String, String>(rs
@@ -92,20 +114,19 @@ public class CNDB_DAO extends DAO {
 		}
 		return list;
 	}
-	
+
 	public List<Triple<String, String, String>> getClass(String entity_name) {
 		List<Triple<String, String, String>> list = new ArrayList<Triple<String, String, String>>();
 		try {
 			super.connect();
 			stmt = conn.createStatement();
 			String sql = String.format(SELECT_CLASS, entity_name);
-			System.out.println(sql);
+
 			rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				list.add(new Triple<String, String, String>(rs
 						.getString("entity_name"),
-						rs.getString("type_dbpedia"), rs
-								.getString("type_link")));
+						rs.getString("type_dbpedia"), rs.getString("type_link")));
 			}
 			super.close();
 		} catch (SQLException e) {
@@ -116,20 +137,19 @@ public class CNDB_DAO extends DAO {
 		}
 		return list;
 	}
-	
+
 	public List<Triple<String, String, String>> getClass2(String entity_name) {
 		List<Triple<String, String, String>> list = new ArrayList<Triple<String, String, String>>();
 		try {
 			super.connect();
 			stmt = conn.createStatement();
 			String sql = String.format(SELECT_CLASS2, entity_name);
-			System.out.println(sql);
+
 			rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				list.add(new Triple<String, String, String>(rs
 						.getString("entity_name"),
-						rs.getString("type_dbpedia"), rs
-								.getString("type_link")));
+						rs.getString("type_dbpedia"), rs.getString("type_link")));
 			}
 			super.close();
 		} catch (SQLException e) {
@@ -140,20 +160,20 @@ public class CNDB_DAO extends DAO {
 		}
 		return list;
 	}
-	
+
 	public List<Triple<String, String, String>> getSameAs(String entity_name) {
 		List<Triple<String, String, String>> list = new ArrayList<Triple<String, String, String>>();
 		try {
 			super.connect();
 			stmt = conn.createStatement();
 			String sql = String.format(SELECT_SAMEAS, entity_name);
-			System.out.println(sql);
+
 			rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				list.add(new Triple<String, String, String>(rs
-						.getString("entity_name"),
-						rs.getString("entity_dbpedia"), rs
-								.getString("entity_link")));
+						.getString("entity_name"), rs
+						.getString("entity_dbpedia"), rs
+						.getString("entity_link")));
 			}
 			super.close();
 		} catch (SQLException e) {
@@ -164,5 +184,30 @@ public class CNDB_DAO extends DAO {
 		}
 		return list;
 	}
-	
+
+	public boolean hasAttributeValueAsEntity(String value) {
+		List<Triple<String, String, String>> infoList = getInformation(value);
+		return infoList.size() > 0;
+	}
+
+	public String hasAlias(String alias) {
+		String entityName = null;
+		try {
+			super.connect();
+			stmt = conn.createStatement();
+			String sql = String.format(SELECT_ALIAS, alias);
+
+			rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				entityName = rs.getString("entity_name");
+			}
+			super.close();
+		} catch (SQLException e) {
+			System.out.println("Data base manipulation error");
+			// e.printStackTrace();
+		}
+		entityName = entityName.trim().replace("\r", "").replace("\n", "");
+		return entityName;
+	}
+
 }

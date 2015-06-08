@@ -23,6 +23,18 @@ public class Triple<A, B, C> {
 	public C getArg3() {
 		return arg3;
 	}
+	
+	public void setArg1(A arg1) {
+		this.arg1 = arg1;
+	}
+
+	public void setArg2(B arg2) {
+		this.arg2 = arg2;
+	}
+
+	public void setArg3(C arg3) {
+		this.arg3 = arg3;
+	}
 
 	@Override
 	public String toString() {
