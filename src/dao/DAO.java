@@ -26,6 +26,18 @@ public abstract class DAO {
 		}
 	}
 
+	public DAO(String database, String user, String password) {
+		this.database = database;
+		this.user = user;
+		this.password = password;
+		try {
+			Class.forName("com.mysql.jdbc.Driver"); // 加载mysq驱动
+		} catch (ClassNotFoundException e) {
+			System.out.println("Find no driver for sql");
+			e.printStackTrace();// 打印出错详细信息
+		}
+	}
+
 	protected void connect() {
 		try {
 			conn = DriverManager.getConnection(database, user, password);

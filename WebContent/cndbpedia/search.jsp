@@ -31,7 +31,8 @@
 	request.setAttribute("curr_tpl",curr_func[3]);
 	request.setAttribute("functions",functions);
 	request.setAttribute("currentFunc", curr_func[0]);
-	// template for search
+	// check parameters
+	
 	// TODO
 %>
 <!DOCTYPE html>
@@ -77,7 +78,8 @@
 				</button>
 				<a class="navbar-brand"
 					href="http://gdm.fudan.edu.cn/KnowledgeWorks/cndbpedia"><%=siteTitle%></a><a
-					class="navbar-brand subbrand" href="/KnowledgeWorks">Knowledge Works</a>
+					class="navbar-brand subbrand" href="/KnowledgeWorks">Knowledge
+					Works</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<ul class="nav navbar-nav navbar-right">
@@ -134,187 +136,247 @@
 							src="../resources/image/loading.gif">
 					</form>
 					<!-- End Search From -->
-					<h2 class="sub-header" id="result_title">
-						Result:
-						<c:out value="${word}"></c:out>
-					</h2>
-					<!--Information -->
-					<div class="panel panel-default">
-						<div class="panel-heading" data-toggle="collapse"
-							data-parent="#accordion" data-target="#collapseInformation">
-							<h4 class="panel-title">
-								<span class="glyphicon glyphicon-search"></span> Information
-							</h4>
-						</div>
-						<div id="collapseInformation" class="panel-collapse collapse in">
-							<div class="panel-body">
-								<div class="table-responsive">
-									<table class="table table-hover table-striped">
-										<tbody>
-											<c:forEach items="${Information}" var="triple">
-												<tr>
-													<td class="col-xs-3"><c:out
-															value="${triple.getArg2()}"></c:out></td>
-													<td class="col-xs-9 text-left"><c:set var="paras"
-															scope="session" value="${triple.getArg3()}" /> <%
- 	String paras = (String) session.getAttribute("paras");
- 			paras = paras.replaceAll("\\[(\\d+)\\]", "");
- 			String[] split = paras.split("\\|\\|\\|");
- 			request.setAttribute("paras", split);
+					<!-- Check parameters -->
+					<c:forEach items="${Parameters}" var="triple">
+						<c:if test="${triple.getArg2() == 'status'}">
+							<c:set var="status" scope="request" value="${triple.getArg3()}"></c:set>
+						</c:if>
+					</c:forEach>
+					<!-- Print according to the status -->
+					<c:choose>
+						<c:when test="${status=='emptyword'}">
+							<h2 class="sub-header" id="result_title">Please enter
+								something</h2>
+						</c:when>
+						<c:when test="${status=='notfound'}">
+							<h2 class="sub-header" id="result_title">The entity is not
+								found</h2>
+						</c:when>
+						<c:when test="${status=='multisense'}">
+							<h2 class="sub-header" id="result_title">Do you mean...</h2>
+							<div class="panel panel-default">
+								<div class="panel-heading" data-toggle="collapse"
+									data-parent="#accordion" data-target="#collapseInfoBox">
+									<h4 class="panel-title">
+										<span class="glyphicon glyphicon-search"></span> Multi-Senses
+									</h4>
+								</div>
+								<div id="collapseInfoBox" class="panel-collapse collapse in">
+									<div class="panel-body">
+										<div class="table-responsive">
+											<table class="table table-hover table-striped">
+												<tbody>
+													<c:forEach items="${MultiSense}" var="triple">
+														<tr>
+															<td class="col-xs-3"><c:out
+																	value="${triple.getArg2()}" escapeXml="false"></c:out></td>
+															<td class="col-xs-9"><c:out
+																	value="${triple.getArg3()}" escapeXml="false"></c:out></td>
+														</tr>
+													</c:forEach>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+						</c:when>
+						<c:when test="${status=='redirect'}">
+							<h2 class="sub-header" id="result_title">
+								Redirect to
+								<c:out value="${word}"></c:out>
+							</h2>
+						</c:when>
+						<c:when test="${status=='direct'}">
+							<h2 class="sub-header" id="result_title">
+								<c:out value="${word}"></c:out>
+							</h2>
+							<!--Information -->
+							<div class="panel panel-default">
+								<div class="panel-heading" data-toggle="collapse"
+									data-parent="#accordion" data-target="#collapseInformation">
+									<h4 class="panel-title">
+										<span class="glyphicon glyphicon-search"></span> Information
+									</h4>
+								</div>
+								<div id="collapseInformation" class="panel-collapse collapse in">
+									<div class="panel-body">
+										<div class="table-responsive">
+											<table class="table table-hover table-striped">
+												<tbody>
+													<c:forEach items="${Information}" var="triple">
+														<tr>
+															<td class="col-xs-3"><c:out
+																	value="${triple.getArg2()}"></c:out></td>
+															<td class="col-xs-9 text-left"><c:set var="paras"
+																	scope="session" value="${triple.getArg3()}" /> <%
+ 	// 这些处理应该在后台完成，这里只是暂时的
+ 					String paras = (String) session
+ 							.getAttribute("paras");
+ 					paras = paras.replaceAll("\\[(\\d+)\\]", "");
+ 					String[] split = paras.split("\\|\\|\\|");
+ 					request.setAttribute("paras", split);
  %> <c:forEach items="${paras}" var="para">
-															<p>
-																<c:out value="${para}"></c:out>
-															</p>
-														</c:forEach></td>
-												</tr>
-											</c:forEach>
-										</tbody>
-									</table>
+																	<p>
+																		<c:out value="${para}"></c:out>
+																	</p>
+																</c:forEach></td>
+														</tr>
+													</c:forEach>
+												</tbody>
+											</table>
+										</div>
+									</div>
 								</div>
 							</div>
-						</div>
-					</div>
-					<!--Infobox -->
-					<div class="panel panel-default">
-						<div class="panel-heading" data-toggle="collapse"
-							data-parent="#accordion" data-target="#collapseInfoBox">
-							<h4 class="panel-title">
-								<span class="glyphicon glyphicon-search"></span> InfoBox
-							</h4>
-						</div>
-						<div id="collapseInfoBox" class="panel-collapse collapse in">
-							<div class="panel-body">
-								<div class="table-responsive">
-									<table class="table table-hover table-striped">
-										<tbody>
-											<c:forEach items="${InfoBox}" var="triple">
-												<tr>
-													<td class="col-xs-3"><c:out
-															value="${triple.getArg2()}" escapeXml="false"></c:out></td>
-													<td class="col-xs-9"><c:out
-															value="${triple.getArg3()}" escapeXml="false"></c:out></td>
-												</tr>
-											</c:forEach>
-										</tbody>
-									</table>
+							<!--Infobox -->
+							<div class="panel panel-default">
+								<div class="panel-heading" data-toggle="collapse"
+									data-parent="#accordion" data-target="#collapseInfoBox">
+									<h4 class="panel-title">
+										<span class="glyphicon glyphicon-search"></span> InfoBox
+									</h4>
+								</div>
+								<div id="collapseInfoBox" class="panel-collapse collapse in">
+									<div class="panel-body">
+										<div class="table-responsive">
+											<table class="table table-hover table-striped">
+												<tbody>
+													<c:forEach items="${InfoBox}" var="triple">
+														<tr>
+															<td class="col-xs-3"><c:out
+																	value="${triple.getArg2()}" escapeXml="false"></c:out></td>
+															<td class="col-xs-9"><c:out
+																	value="${triple.getArg3()}" escapeXml="false"></c:out></td>
+														</tr>
+													</c:forEach>
+												</tbody>
+											</table>
+										</div>
+									</div>
 								</div>
 							</div>
-						</div>
-					</div>
-					<!--Category -->
-					<div class="panel panel-default">
-						<div class="panel-heading" data-toggle="collapse"
-							data-parent="#accordion" data-target="#collapseCategory">
-							<h4 class="panel-title">
-								<span class="glyphicon glyphicon-search"></span> Category
-							</h4>
-						</div>
-						<div id="collapseCategory" class="panel-collapse collapse in">
-							<div class="panel-body">
-								<div class="table-responsive">
-									<table class="table table-hover table-striped">
-										<tbody>
-											<c:forEach items="${Category}" var="triple">
-												<tr>
-													<td class="col-xs-3"><c:out
-															value="${triple.getArg2()}"></c:out></td>
-													<td class="col-xs-9"><c:out
-															value="${triple.getArg3()}"></c:out></td>
-												</tr>
-											</c:forEach>
-										</tbody>
-									</table>
+							<!--Category -->
+							<div class="panel panel-default">
+								<div class="panel-heading" data-toggle="collapse"
+									data-parent="#accordion" data-target="#collapseCategory">
+									<h4 class="panel-title">
+										<span class="glyphicon glyphicon-search"></span> Category
+									</h4>
+								</div>
+								<div id="collapseCategory" class="panel-collapse collapse in">
+									<div class="panel-body">
+										<div class="table-responsive">
+											<table class="table table-hover table-striped">
+												<tbody>
+													<c:forEach items="${Category}" var="triple">
+														<tr>
+															<td class="col-xs-3"><c:out
+																	value="${triple.getArg2()}"></c:out></td>
+															<td class="col-xs-9"><c:out
+																	value="${triple.getArg3()}"></c:out></td>
+														</tr>
+													</c:forEach>
+												</tbody>
+											</table>
+										</div>
+									</div>
 								</div>
 							</div>
-						</div>
-					</div>
-					<!--Class -->
-					<div class="panel panel-default">
-						<div class="panel-heading" data-toggle="collapse"
-							data-parent="#accordion" data-target="#collapseClass">
-							<h4 class="panel-title">
-								<span class="glyphicon glyphicon-search"></span> Linking to
-								DBpedia Class
-							</h4>
-						</div>
-						<div id="collapseClass" class="panel-collapse collapse in">
-							<div class="panel-body">
-								<div class="table-responsive">
-									<table class="table table-hover table-striped">
-										<tbody>
-											<c:forEach items="${Class}" var="triple">
-												<tr>
-													<td class="col-xs-3"><a
-														href="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" target="_blank">rdf:type</a>
-													</td>
-													<td class="col-xs-9"><a href="${triple.getArg3()}" target="_blank"><c:out
-																value="${triple.getArg2()}"></c:out></a></td>
-												</tr>
-											</c:forEach>
-										</tbody>
-									</table>
+							<!--Class -->
+							<div class="panel panel-default">
+								<div class="panel-heading" data-toggle="collapse"
+									data-parent="#accordion" data-target="#collapseClass">
+									<h4 class="panel-title">
+										<span class="glyphicon glyphicon-search"></span> Linking to
+										DBpedia Class
+									</h4>
+								</div>
+								<div id="collapseClass" class="panel-collapse collapse in">
+									<div class="panel-body">
+										<div class="table-responsive">
+											<table class="table table-hover table-striped">
+												<tbody>
+													<c:forEach items="${Class}" var="triple">
+														<tr>
+															<td class="col-xs-3"><a
+																href="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+																target="_blank">rdf:type</a></td>
+															<td class="col-xs-9"><a href="${triple.getArg3()}"
+																target="_blank"><c:out value="${triple.getArg2()}"></c:out></a></td>
+														</tr>
+													</c:forEach>
+												</tbody>
+											</table>
+										</div>
+									</div>
 								</div>
 							</div>
-						</div>
-					</div>
-					<!--Class2 -->
-					<div class="panel panel-default">
-						<div class="panel-heading" data-toggle="collapse"
-							data-parent="#accordion" data-target="#collapseClass2">
-							<h4 class="panel-title">
-								<span class="glyphicon glyphicon-search"></span> Linking to
-								DBpedia Class (Heuristic)
-							</h4>
-						</div>
-						<div id="collapseClass2" class="panel-collapse collapse in">
-							<div class="panel-body">
-								<div class="table-responsive">
-									<table class="table table-hover table-striped">
-										<tbody>
-											<c:forEach items="${Class2}" var="triple">
-												<tr>
-													<td class="col-xs-3"><a
-														href="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" target="_blank">rdf:type</a>
-													</td>
-													<td class="col-xs-9"><a href="${triple.getArg3()}" target="_blank"><c:out
-																value="${triple.getArg2()}"></c:out></a></td>
-												</tr>
-											</c:forEach>
-										</tbody>
-									</table>
+							<!--Class2 -->
+							<div class="panel panel-default">
+								<div class="panel-heading" data-toggle="collapse"
+									data-parent="#accordion" data-target="#collapseClass2">
+									<h4 class="panel-title">
+										<span class="glyphicon glyphicon-search"></span> Linking to
+										DBpedia Class (Heuristic)
+									</h4>
+								</div>
+								<div id="collapseClass2" class="panel-collapse collapse in">
+									<div class="panel-body">
+										<div class="table-responsive">
+											<table class="table table-hover table-striped">
+												<tbody>
+													<c:forEach items="${Class2}" var="triple">
+														<tr>
+															<td class="col-xs-3"><a
+																href="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+																target="_blank">rdf:type</a></td>
+															<td class="col-xs-9"><a href="${triple.getArg3()}"
+																target="_blank"><c:out value="${triple.getArg2()}"></c:out></a></td>
+														</tr>
+													</c:forEach>
+												</tbody>
+											</table>
+										</div>
+									</div>
 								</div>
 							</div>
-						</div>
-					</div>
-					<!--Entity -->
-					<div class="panel panel-default">
-						<div class="panel-heading" data-toggle="collapse"
-							data-parent="#accordion" data-target="#collapseEntity">
-							<h4 class="panel-title">
-								<span class="glyphicon glyphicon-search"></span> Linking to
-								DBpedia Entity
-							</h4>
-						</div>
-						<div id="collapseEntity" class="panel-collapse collapse in">
-							<div class="panel-body">
-								<div class="table-responsive">
-									<table class="table table-hover table-striped">
-										<tbody>
-											<c:forEach items="${Entity}" var="triple">
-												<tr>
-													<td class="col-xs-3"><a
-														href="http://www.w3.org/2002/07/owl#sameAs" target="_blank">rdf:sameAs</a>
-													</td>
-													<td class="col-xs-9"><a href="${triple.getArg3()}" target="_blank"><c:out
-																value="${triple.getArg2()}"></c:out></a></td>
-												</tr>
-											</c:forEach>
-										</tbody>
-									</table>
+							<!--Entity -->
+							<div class="panel panel-default">
+								<div class="panel-heading" data-toggle="collapse"
+									data-parent="#accordion" data-target="#collapseEntity">
+									<h4 class="panel-title">
+										<span class="glyphicon glyphicon-search"></span> Linking to
+										DBpedia Entity
+									</h4>
+								</div>
+								<div id="collapseEntity" class="panel-collapse collapse in">
+									<div class="panel-body">
+										<div class="table-responsive">
+											<table class="table table-hover table-striped">
+												<tbody>
+													<c:forEach items="${Entity}" var="triple">
+														<tr>
+															<td class="col-xs-3"><a
+																href="http://www.w3.org/2002/07/owl#sameAs"
+																target="_blank">rdf:sameAs</a></td>
+															<td class="col-xs-9"><a href="${triple.getArg3()}"
+																target="_blank"><c:out value="${triple.getArg2()}"></c:out></a></td>
+														</tr>
+													</c:forEach>
+												</tbody>
+											</table>
+										</div>
+									</div>
 								</div>
 							</div>
-						</div>
-					</div>
+						</c:when>
+						<c:when test="${status=='exception'}">Something terrible happened</c:when>
+						<c:otherwise>
+							<h2 class="sub-header" id="result_title">Please enter a
+								word.</h2>
+						</c:otherwise>
+					</c:choose>
 				</c:if>
 				<!-- panel panel-default -->
 			</div>

@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,10 +25,12 @@ import dao.CNDB_DAO;
 @RequestMapping("/cndbpedia")
 public class CNDBController {
 
-	private static final String DBPEDIA_SITE_SEARCH = "http://gdm.fudan.edu.cn/KnowledgeWorks/cndbpedia/search?word=%s";
+	private static final String DBPEDIA_SITE_SEARCH = "/KnowledgeWorks/cndbpedia/search?word=%s";
 	private static final String ATTRIBUTE_DBPEDIA_TEMPLATE = "<a  title=\"%s\" href=\"%s\" target=\"_blank\" >%s</a>";
 	private static final String ATTRIBUTE_VALUE_HTML_TEMPLATE = "<a href=\"%s\">%s</a>";
 	private CNDB_DAO db = new CNDB_DAO();
+
+	private static boolean DEBUG = true;
 
 	@RequestMapping(value = "/")
 	public String defaultpage(Model model) {
@@ -46,6 +49,8 @@ public class CNDBController {
 	public ModelAndView search(
 			@RequestParam(value = "word", required = false, defaultValue = "") String word) {
 		Map<String, List<Triple<String, String, String>>> model = new HashMap<String, List<Triple<String, String, String>>>();
+		List<Triple<String, String, String>> parameters = new ArrayList<Triple<String, String, String>>();
+		List<Triple<String, String, String>> multisenses = new ArrayList<Triple<String, String, String>>();
 		List<Triple<String, String, String>> information = new ArrayList<Triple<String, String, String>>();
 		List<Triple<String, String, String>> infobox = new ArrayList<Triple<String, String, String>>();
 		List<Triple<String, String, String>> category = new ArrayList<Triple<String, String, String>>();
@@ -53,50 +58,67 @@ public class CNDBController {
 		List<Triple<String, String, String>> eclass2 = new ArrayList<Triple<String, String, String>>();
 		List<Triple<String, String, String>> entity = new ArrayList<Triple<String, String, String>>();
 		if (word.isEmpty()) {
-			// return empty
+			parameters.add(new Triple<String, String, String>(word, "status",
+					"emptyword"));
 		} else {
-//			 try {
-//			 word = new String(word.getBytes("ISO-8859-1"), "utf-8");
-//			 } catch (UnsupportedEncodingException e) {
-//			 // debug
-//			 }
+			try {
+				word = new String(word.getBytes("ISO-8859-1"), "utf-8");
+			} catch (UnsupportedEncodingException e) {
+				// debug
+			}
 			System.out.println("CNDBController: Receive word=" + word);
 			// mapping from word to entity
-			String entityName;
-			try {
-				if (db.hasAttributeValueAsEntity(word)) {
-					entityName = word;
-					information = db.getInformation(entityName);
-					infobox = processInfobox(db.getInfobox(entityName),
-							db.getAttributeMapping(), entityName);
-					category = db.getCategory(entityName);
-					eclass = db.getClass(entityName);
-					eclass2 = db.getClass2(entityName);
-					entity = db.getSameAs(word);
-					// remove duplicated
-					rmdup(information);
-					rmdup(infobox);
-				} else if ((entityName = db.hasAlias(word)) != null) {
-					// double check
-					if (db.hasAttributeValueAsEntity(entityName)) {
-						information = db.getInformation(entityName);
-						infobox = processInfobox(db.getInfobox(entityName),
-								db.getAttributeMapping(), entityName);
-						category = db.getCategory(entityName);
-						eclass = db.getClass(entityName);
-						eclass2 = db.getClass2(entityName);
-						entity = db.getSameAs(word);
-						// remove duplicated
-						rmdup(information);
-						rmdup(infobox);
+			String entityName = null;
+			try { // direct -> redirect -> multisense
+				String direct = db.getDirect(word);
+				if (DEBUG) {
+					System.out.println("direct: " + direct);
+				}
+				if (direct == null) {
+					// check redirect
+					String redirect = db.getReDirect(word);
+					if (DEBUG) {
+						System.out.println("redirect: " + redirect);
+					}
+					if (redirect == null) {
+						// check multisense
+						db.getMultiSenses(word, multisenses);
+						if (DEBUG) {
+							System.out.println("multisenses: "
+									+ multisenses.size());
+						}
+						if (multisenses.size() == 0) {
+							parameters.add(new Triple<String, String, String>(
+									word, "status", "notfound"));
+						} else {
+							parameters.add(new Triple<String, String, String>(
+									word, "status", "multisense"));
+							multisenses = processMultiSenses(word, multisenses);
+						}
+					} else {
+						entityName = redirect;
+						parameters.add(new Triple<String, String, String>(word,
+								"status", "redirect"));
+						fetchAllData(entityName, information, infobox,
+								category, eclass, eclass2, entity);
 					}
 				} else {
-					// return empty
+					entityName = direct;
+					parameters.add(new Triple<String, String, String>(word,
+							"status", "direct"));
+					fetchAllData(entityName, information, infobox, category,
+							eclass, eclass2, entity);
 				}
 			} catch (Exception e) {
-
+				e.printStackTrace();
+				// strange exceptions
+				// catch and handle later
+				parameters.add(new Triple<String, String, String>(word,
+						"status", "exception"));
 			}
 		}
+		model.put("Parameters", parameters);
+		model.put("MultiSense", multisenses);
 		model.put("Information", information);
 		model.put("InfoBox", infobox);
 		model.put("Category", category);
@@ -106,11 +128,66 @@ public class CNDBController {
 		return new ModelAndView("search", model);
 	}
 
-	private List<Triple<String, String, String>> processInfobox(
+	private List<Triple<String, String, String>> processMultiSenses(
+			String word, List<Triple<String, String, String>> multisenses) {
+		List<Triple<String, String, String>> processed = new ArrayList<Triple<String, String, String>>();
+		// link the multi-sense
+		String valueHTML;
+		for (Triple<String, String, String> sense : multisenses) {
+			valueHTML = String.format(ATTRIBUTE_VALUE_HTML_TEMPLATE,
+					String.format(DBPEDIA_SITE_SEARCH, sense.getArg3()),
+					sense.getArg3());
+			sense.setArg3(valueHTML);
+		}
+
+		// merge if attribute is the same
+		Map<String, Set<String>> attrMap = new HashMap<String, Set<String>>();
+		for (Triple<String, String, String> sense : multisenses) {
+			String attr = sense.getArg2();
+			Set<String> set = attrMap.get(attr);
+			if (set != null) {
+				set.add(sense.getArg3());
+			} else {
+				set = new HashSet<String>();
+				set.add(sense.getArg3());
+				attrMap.put(attr, set);
+			}
+		}
+		for (Entry<String, Set<String>> en : attrMap.entrySet()) {
+			valueHTML = en.getValue().toString();
+			valueHTML = valueHTML.replaceAll("\\[|\\]", "");
+			valueHTML = valueHTML.replace(", ", "<br>");
+			processed.add(new Triple<String, String, String>(word, en.getKey(),
+					valueHTML));
+		}
+		return processed;
+	}
+
+	private void fetchAllData(String entityName,
+			List<Triple<String, String, String>> information,
 			List<Triple<String, String, String>> infobox,
-			List<Triple<String, String, String>> attributeMapping,
-			String entityName) {
+			List<Triple<String, String, String>> category,
+			List<Triple<String, String, String>> eclass,
+			List<Triple<String, String, String>> eclass2,
+			List<Triple<String, String, String>> entity) {
+		db.getInformation(entityName, information);
+		db.getInfobox(entityName, infobox);
+		infobox = processInfobox(entityName, infobox);
+		db.getCategory(entityName, category);
+		db.getClass(entityName, eclass);
+		db.getClass2(entityName, eclass2);
+		db.getSameAs(entityName, entity);
+		// remove duplicated
+		rmdup(information);
+		rmdup(infobox);
+
+	}
+
+	private List<Triple<String, String, String>> processInfobox(
+			String entityName, List<Triple<String, String, String>> infobox) {
 		List<Triple<String, String, String>> processedInfobox = new ArrayList<Triple<String, String, String>>();
+		List<Triple<String, String, String>> attributeMapping = new ArrayList<Triple<String, String, String>>();
+		db.getAttributeMapping(attributeMapping);
 		// check if value is entity
 		for (Triple<String, String, String> info : infobox) {
 			String value = info.getArg3();
@@ -203,25 +280,7 @@ public class CNDBController {
 	public static void main(String[] args) {
 		// test
 		CNDBController a = new CNDBController();
-		List<Triple<String, String, String>> infobox = new ArrayList<Triple<String, String, String>>();
-		List<Triple<String, String, String>> attributeMapping = new ArrayList<Triple<String, String, String>>();
-		attributeMapping.add(new Triple<String, String, String>("职业", "zhiye",
-				"zhiyeurl"));
-		attributeMapping.add(new Triple<String, String, String>("妻子", "qizi",
-				"qiziurl"));
-
-		infobox.add(new Triple<String, String, String>("太湖", "气候条件",
-				"<a target=\"_blank\" href=\"/view/47993.htm\">亚热带季风气候</a>"));
-		infobox.add(new Triple<String, String, String>(
-				"太湖",
-				"著名景点",
-				"<a target=\"_blank\" href=\"/view/969797.htm\">大七孔桥</a>、梦塘、恐怖峡、<a target=\"_blank\" href=\"/subview/64627/11022289.htm\">天生桥</a>"));
-		List<Triple<String, String, String>> processedInfobox = a
-				.processInfobox(infobox, attributeMapping, "太湖");
-
-		for (Triple<String, String, String> triple : processedInfobox) {
-			System.out.println(triple);
-		}
-
+		a.search("樱桃电视剧");
+		a.search("徐江洪");
 	}
 }
