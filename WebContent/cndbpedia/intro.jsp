@@ -119,6 +119,13 @@
 					<p>CN-DBpedia is an effort to extract structured information from Chinese encyclopedia sites, such as Baidu Baike, and make this information available on the Web. CN-DBpedia allows you to ask sophisticated queries against Chinese encyclopedia sites, and to link the different data sets on the Web to Chinese encyclopedia sites data.</p>
 					<h5 class="text-muted">什么是CN-DBpedia</h5>
 					<p>CN-DBpedia致力于从中文百科类网站（如百科百科等）中提取结构化信息，并将其共享。CN-DBpedia支持用户进行复杂查询，并将中文百科类网站数据与互联网上其他数据源数据进行连接。</p>
+					<hr>
+					<h6>Latest Update</h6>
+					<ul>
+						<li>2015.06.15 支持百度百科已包含的实体链接</li>
+						<li>2015.06.15 迁移数据库</li>
+						<li>2015.06.15 多值属性链接</li>
+					</ul>
 				</div>
 				<!-- Template Choose -->
 				<!-- panel panel-default -->
