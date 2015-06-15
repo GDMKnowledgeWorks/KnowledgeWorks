@@ -37,7 +37,7 @@ public class CNDB_DAO extends DAO {
 			super.connect();
 			stmt = conn.createStatement();
 			String sql = String.format(SELECT_INFORMATION, entity_name);
-
+			System.out.println(sql);
 			rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				infoList.add(new Triple<String, String, String>(rs

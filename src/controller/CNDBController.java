@@ -31,7 +31,7 @@ public class CNDBController {
 	private static final String ATTRIBUTE_VALUE_HTML_TEMPLATE = "<a href=\"%s\">%s</a>";
 	private CNDB_DAO db = new CNDB_DAO();
 
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
 
 	@RequestMapping(value = "/")
 	public String defaultpage(Model model) {
@@ -119,6 +119,11 @@ public class CNDBController {
 			}
 		}
 		parameters.add(new Triple<String, String, String>(word, "word", word));
+		if(DEBUG){
+			System.out.println(information.toString());
+			System.out.println(infobox.toString());
+			System.out.println(category.toString());
+		}
 		model.put("Parameters", parameters);
 		model.put("MultiSense", multisenses);
 		model.put("Information", information);
@@ -172,6 +177,7 @@ public class CNDBController {
 			List<Triple<String, String, String>> eclass,
 			List<Triple<String, String, String>> eclass2,
 			List<Triple<String, String, String>> entity) {
+		entityName = entityName.replace("\r", "").replace("\n", "");
 		db.getInformation(entityName, information);
 		db.getInfobox(entityName, infobox);
 		processInfobox(entityName, infobox);
@@ -182,7 +188,6 @@ public class CNDBController {
 		// remove duplicated
 		rmdup(information);
 		rmdup(infobox);
-
 	}
 
 	private List<Triple<String, String, String>> processInfobox(
