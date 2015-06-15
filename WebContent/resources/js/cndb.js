@@ -1,5 +1,3 @@
-var WORDNUM = 20;
-
 $("#search_buttom").click(function() {
 	var word = $("#search_input").val();
 	console.log(word);

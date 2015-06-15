@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,7 +31,7 @@ public class CNDBController {
 	private static final String ATTRIBUTE_VALUE_HTML_TEMPLATE = "<a href=\"%s\">%s</a>";
 	private CNDB_DAO db = new CNDB_DAO();
 
-	private static boolean DEBUG = true;
+	private static boolean DEBUG = false;
 
 	@RequestMapping(value = "/")
 	public String defaultpage(Model model) {
@@ -61,11 +62,11 @@ public class CNDBController {
 			parameters.add(new Triple<String, String, String>(word, "status",
 					"emptyword"));
 		} else {
-			try {
-				word = new String(word.getBytes("ISO-8859-1"), "utf-8");
-			} catch (UnsupportedEncodingException e) {
-				// debug
-			}
+//			try {
+//				word = new String(word.getBytes("ISO-8859-1"), "utf-8");
+//			} catch (UnsupportedEncodingException e) {
+//				// debug
+//			}
 			System.out.println("CNDBController: Receive word=" + word);
 			// mapping from word to entity
 			String entityName = null;
@@ -93,7 +94,7 @@ public class CNDBController {
 						} else {
 							parameters.add(new Triple<String, String, String>(
 									word, "status", "multisense"));
-							multisenses = processMultiSenses(word, multisenses);
+							processMultiSenses(word, multisenses);
 						}
 					} else {
 						entityName = redirect;
@@ -117,6 +118,7 @@ public class CNDBController {
 						"status", "exception"));
 			}
 		}
+		parameters.add(new Triple<String, String, String>(word, "word", word));
 		model.put("Parameters", parameters);
 		model.put("MultiSense", multisenses);
 		model.put("Information", information);
@@ -130,7 +132,6 @@ public class CNDBController {
 
 	private List<Triple<String, String, String>> processMultiSenses(
 			String word, List<Triple<String, String, String>> multisenses) {
-		List<Triple<String, String, String>> processed = new ArrayList<Triple<String, String, String>>();
 		// link the multi-sense
 		String valueHTML;
 		for (Triple<String, String, String> sense : multisenses) {
@@ -153,14 +154,15 @@ public class CNDBController {
 				attrMap.put(attr, set);
 			}
 		}
+		multisenses.clear();
 		for (Entry<String, Set<String>> en : attrMap.entrySet()) {
 			valueHTML = en.getValue().toString();
 			valueHTML = valueHTML.replaceAll("\\[|\\]", "");
 			valueHTML = valueHTML.replace(", ", "<br>");
-			processed.add(new Triple<String, String, String>(word, en.getKey(),
+			multisenses.add(new Triple<String, String, String>(word, en.getKey(),
 					valueHTML));
 		}
-		return processed;
+		return multisenses;
 	}
 
 	private void fetchAllData(String entityName,
@@ -172,7 +174,7 @@ public class CNDBController {
 			List<Triple<String, String, String>> entity) {
 		db.getInformation(entityName, information);
 		db.getInfobox(entityName, infobox);
-		infobox = processInfobox(entityName, infobox);
+		processInfobox(entityName, infobox);
 		db.getCategory(entityName, category);
 		db.getClass(entityName, eclass);
 		db.getClass2(entityName, eclass2);
@@ -185,7 +187,6 @@ public class CNDBController {
 
 	private List<Triple<String, String, String>> processInfobox(
 			String entityName, List<Triple<String, String, String>> infobox) {
-		List<Triple<String, String, String>> processedInfobox = new ArrayList<Triple<String, String, String>>();
 		List<Triple<String, String, String>> attributeMapping = new ArrayList<Triple<String, String, String>>();
 		db.getAttributeMapping(attributeMapping);
 		// check if value is entity
@@ -198,21 +199,22 @@ public class CNDBController {
 		}
 
 		// merge if attribute is the same
-		Map<String, Set<String>> attrMap = new HashMap<String, Set<String>>();
+		Map<String, List<String>> attrMap = new HashMap<String, List<String>>();
 		for (Triple<String, String, String> info : infobox) {
 			String attr = info.getArg2();
-			Set<String> set = attrMap.get(attr);
+			List<String> set = attrMap.get(attr);
 			if (set != null) {
 				set.add(info.getArg3());
 			} else {
-				set = new HashSet<String>();
+				set = new LinkedList<String>();
 				set.add(info.getArg3());
 				attrMap.put(attr, set);
 			}
 		}
 
 		// attribute mapping
-		for (Entry<String, Set<String>> en : attrMap.entrySet()) {
+		infobox.clear();
+		for (Entry<String, List<String>> en : attrMap.entrySet()) {
 			boolean mappingHas = false;
 			for (Triple<String, String, String> attr : attributeMapping) {
 				if (en.getKey().equals(attr.getArg1())) {
@@ -220,25 +222,35 @@ public class CNDBController {
 					// link attribute template
 					String attrHTML = String.format(ATTRIBUTE_DBPEDIA_TEMPLATE,
 							attr.getArg2(), attr.getArg3(), attr.getArg1());
-					String valueHTML = en.getValue().toString();
-					valueHTML = valueHTML.replaceAll("\\[|\\]", "");
-					processedInfobox.add(new Triple<String, String, String>(
+					String valueHTML = toHTMLList(en.getValue());
+					infobox.add(new Triple<String, String, String>(
 							entityName, attrHTML, valueHTML));
 				}
 			}
 			if (!mappingHas) {
-				String valueHTML = en.getValue().toString();
-				valueHTML = valueHTML.replaceAll("\\[|\\]", "");
-				processedInfobox.add(new Triple<String, String, String>(
+				String valueHTML = toHTMLList(en.getValue());
+				infobox.add(new Triple<String, String, String>(
 						entityName, en.getKey(), valueHTML));
 			}
 		}
-		return processedInfobox;
+		return infobox;
 
 	}
 
+	private String toHTMLList(List<String> list) {
+		String html = list.get(0);
+		for (int i = 1; i < list.size(); i++) {
+			html+="<br>"+list.get(i);
+		}
+		return html;
+	}
+
 	private String processHTMLTag(String value) {
-		Pattern p = Pattern.compile("(<a([^(<>)]*)>([^(<a>)]+)</a>)+");
+		if(!value.contains("<a>")){
+			return value;
+		}
+		
+		Pattern p = Pattern.compile("(<a>(.*)</a>)+");
 		Matcher m = p.matcher(value);
 		String result = value;
 		String linkUrl;
@@ -246,7 +258,7 @@ public class CNDBController {
 		String entity;
 		while (m.find()) {
 			group = m.group();
-			entity = m.group(3);
+			entity = m.group(2);
 			linkUrl = String.format(DBPEDIA_SITE_SEARCH, entity);
 			result = result.replace(group, String.format(
 					ATTRIBUTE_VALUE_HTML_TEMPLATE, linkUrl, entity));
@@ -280,7 +292,8 @@ public class CNDBController {
 	public static void main(String[] args) {
 		// test
 		CNDBController a = new CNDBController();
-		a.search("樱桃电视剧");
-		a.search("徐江洪");
+		a.search("复旦大学");
+//		a.search("樱桃电视剧");
+//		a.search("徐江洪");
 	}
 }

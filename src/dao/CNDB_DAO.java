@@ -1,5 +1,7 @@
 package dao;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -9,13 +11,13 @@ import structure.Triple;
 
 public class CNDB_DAO extends DAO {
 
-	private static String SELECT_DIRECT = "select * from directmapping where entity_primary_sense='%s'";
-	private static String SELECT_REDIRECT = "select * from redirectmapping where entity_alias='%s'";
-	private static String SELECT_MULTISENSE = "select * from multisensemapping where entity_sense='%s'";
+	private static String SELECT_DIRECT = "select * from directmapping where entity_sense='%s'";
+	private static String SELECT_REDIRECT = "select * from redirectmapping where entity_sense='%s'";
+	private static String SELECT_MULTISENSE = "select * from multisensemapping where string='%s'";
 
 	private static String SELECT_INFORMATION = "select * from information where entity_name='%s'";
 	private static String SELECT_ALIAS = "select * from aliasmapping where entity_alias='%s'";
-	private static String SELECT_INFOBOX = "select * from infoboxadvance where entity_name='%s'";
+	private static String SELECT_INFOBOX = "select * from infobox where entity_name='%s'";
 	private static String SELECT_ATTRIBUTEMAPPING = "select * from attributemapping";
 	private static String SELECT_CATEGORY = "select * from category where entity_name='%s'";
 	private static String SELECT_CLASS = "select * from class where entity_name='%s'";
@@ -24,9 +26,9 @@ public class CNDB_DAO extends DAO {
 
 	public CNDB_DAO() {
 		super(
-				// "jdbc:mysql://10.131.239.140:3306/cndbpedia?useUnicode=true&amp;characterEncoding=UTF-8");
-				"jdbc:mysql://10.141.208.21:3306/cndbpedia", "admin",
-				"gdmlabsqladmin");
+				// "jdbc:mysql://10.131.239.140:3306/cndbpedia?useUnicode=true&characterEncoding=UTF-8","root","root");
+				"jdbc:mysql://10.141.208.21:3306/cndbpedia?useUnicode=true&characterEncoding=UTF-8",
+				"admin", "gdmlabsqladmin");
 	}
 
 	public void getInformation(String entity_name,
@@ -48,7 +50,7 @@ public class CNDB_DAO extends DAO {
 			infoList.add(new Triple<String, String, String>(entity_name, "信息",
 					"查询失败"));
 			System.out.println("Data base manipulation error: getInformation");
-			// e.printStackTrace();
+			e.printStackTrace();
 			super.close();
 		}
 	}
@@ -60,14 +62,14 @@ public class CNDB_DAO extends DAO {
 			stmt = conn.createStatement();
 			String sql = String.format(SELECT_DIRECT, word);
 			rs = stmt.executeQuery(sql);
-			if (rs.next()) {
+			while (rs.next()) {
 				entity_name = rs.getString("entity_name");
 			}
 			super.close();
 		} catch (SQLException e) {
 			entity_name = null;
 			System.out.println("Data base manipulation error: getDirect");
-			// e.printStackTrace();
+			e.printStackTrace();
 			super.close();
 		}
 		return entity_name;
@@ -168,8 +170,8 @@ public class CNDB_DAO extends DAO {
 			while (rs.next()) {
 				list.add(new Triple<String, String, String>(rs
 						.getString("entity_name"),
-						rs.getString("entity_class"), rs
-								.getString("entity_category")));
+						rs.getString("entity_category"), rs
+								.getString("entity_category_value")));
 			}
 			super.close();
 		} catch (SQLException e) {
@@ -199,7 +201,7 @@ public class CNDB_DAO extends DAO {
 			list.add(new Triple<String, String, String>(entity_name, "信息",
 					"查询失败"));
 			System.out.println("Data base manipulation error: getClass");
-			// e.printStackTrace();
+			 e.printStackTrace();
 			super.close();
 		}
 	}
@@ -275,6 +277,33 @@ public class CNDB_DAO extends DAO {
 	public boolean hasEntity(String word) {
 		String entity_name = getDirect(word);
 		return entity_name != null;
+	}
+
+	private String excute(String sql) {
+		String r = "";
+		try {
+			super.connect();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				r += rs.getString("TABLE_NAME") + "\n";
+			}
+			super.close();
+		} catch (SQLException e) {
+			System.out.println("Data base manipulation error: sql");
+			e.printStackTrace();
+			super.close();
+		}
+		return r;
+	}
+
+	public static void main(String[] args) {
+		CNDB_DAO d = new CNDB_DAO();
+		String r = d
+				.excute("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA ='cndbpedia'");
+		System.out.println("result");
+		System.out.println(r);
+
 	}
 
 }
